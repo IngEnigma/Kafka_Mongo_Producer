@@ -22,8 +22,8 @@ producer_conf = {
 
 producer = Producer(producer_conf)
 
-TOPIC = "crimes_mongo"
-JSONL_URL = "https://raw.githubusercontent.com/IngEnigma/StreamlitSpark/refs/heads/master/results/male_crimes/data.jsonl"
+TOPIC = "crimes_mongo"  # Cambiamos el tópico
+JSONL_URL = "https://raw.githubusercontent.com/IngEnigma/StreamlitSpark/refs/heads/master/results/crimes_by_area/data.jsonl"
 
 def delivery_report(err, msg):
     if err:
@@ -32,38 +32,28 @@ def delivery_report(err, msg):
         print(f'Enviado: {msg.value().decode("utf-8")} a {msg.topic()}')
 
 def transform_for_mongodb(data):
-    """Transforma los datos para una estructura más óptima en MongoDB"""
+    """Transforma los datos de área para MongoDB"""
     try:
-        # Convertir a objeto datetime
-        report_date = datetime.strptime(data['report_date'], '%m/%d/%Y %I:%M:%S %p')
-        
         return {
-            '_id': str(data['dr_no']),  # MongoDB usa _id como identificador único
-            'crime_details': {
-                'code_description': data['crm_cd_desc'],
-                'report_date': report_date,
-                'location': {  # Ejemplo de estructura embebida
-                    'area': data.get('area', None),
-                    'lat': data.get('lat', None),
-                    'lon': data.get('lon', None)
-                }
-            },
-            'victim': {
-                'age': data['victim_age'],
-                'sex': data['victim_sex'],
-                'descent': data.get('victim_descent', 'U')  # U para desconocido
-            },
+            '_id': f"area_{data['area']}",  # ID único para cada área
+            'area_number': data['area'],
+            'crime_count': data['crime_count'],
             'metadata': {
                 'source': 'LAPD',
-                'imported_at': datetime.utcnow()
+                'imported_at': datetime.utcnow(),
+                'dataset': 'crimes_by_area'
+            },
+            'stats': {
+                'ranking': None,  # Se puede calcular después
+                'normalized_count': None  # Se puede calcular después
             }
         }
     except Exception as e:
         print(f"Error transformando datos: {e}")
         return None
 
-@app.route('/send-crimes-mongodb', methods=['POST'])
-def send_crimes_mongodb():
+@app.route('/send-area', methods=['POST'])
+def send_area_stats():
     try:
         print("Obteniendo datos desde:", JSONL_URL)
         response = requests.get(JSONL_URL)
@@ -93,7 +83,7 @@ def send_crimes_mongodb():
         
         return jsonify({
             "status": "success",
-            "message": f"Datos transformados enviados al tópico '{TOPIC}'",
+            "message": f"Datos de áreas enviados al tópico '{TOPIC}'",
             "stats": {
                 "total": len(records),
                 "success": success_count,
