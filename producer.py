@@ -63,6 +63,7 @@ def send_area_stats():
         print(f"Recibidos {len(records)} registros")
 
         success_count = 0
+        failure_count = 0
         for line in records:
             try:
                 original_data = json.loads(line)
@@ -74,12 +75,16 @@ def send_area_stats():
                         json.dumps(mongo_data, default=str).encode('utf-8'), 
                         callback=delivery_report
                     )
+                    print(f"Enviado: {json.dumps(mongo_data, default=str)} al tópico {TOPIC}")
                     success_count += 1
+                else:
+                    failure_count += 1
             except Exception as e:
                 print(f"Error procesando línea: {e}. Línea: {line}")
+                failure_count += 1
 
         producer.flush()
-        print(f"Procesamiento completo. Éxitos: {success_count}, Fallos: {len(records)-success_count}")
+        print(f"Procesamiento completo. Éxitos: {success_count}, Fallos: {failure_count}")
         
         return jsonify({
             "status": "success",
@@ -87,7 +92,7 @@ def send_area_stats():
             "stats": {
                 "total": len(records),
                 "success": success_count,
-                "failed": len(records)-success_count
+                "failed": failure_count
             }
         }), 200
 
