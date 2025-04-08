@@ -13,11 +13,11 @@ load_dotenv()
 
 # Configuración del productor para Redpanda Cloud
 producer_conf = {
-    'bootstrap.servers': os.getenv('KAFKA_BROKERS', 'cvq4abs3mareak309q80.any.us-west-2.mpx.prd.cloud.redpanda.com:9092'),
-    'security.protocol': 'SASL_SSL',
-    'sasl.mechanism': 'SCRAM-SHA-256',
-    'sasl.username': os.getenv('KAFKA_USER', 'IngEnigma'),
-    'sasl.password': os.getenv('KAFKA_PASSWORD', 'BrARBOxX98VI4f2LIuIT1911NYGrXu'),
+    'bootstrap.servers': 'cvq4abs3mareak309q80.any.us-west-2.mpx.prd.cloud.redpanda.com:9092',
+    'security.protocol': 'SASL_SSL',           
+    'sasl.mechanism': 'SCRAM-SHA-256',         
+    'sasl.username': 'IngEnigma',            
+    'sasl.password': 'BrARBOxX98VI4f2LIuIT1911NYGrXu',          
 }
 
 producer = Producer(producer_conf)
