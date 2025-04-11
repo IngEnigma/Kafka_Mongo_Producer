@@ -84,7 +84,7 @@ def fetch_and_send_data():
     producer.flush()
     return success, failed, len(records)
 
-@app.route('/send-area', methods=['POST'])
+@app.route('/send-areas', methods=['POST'])
 def send_area_stats():
     try:
         success, failed, total = fetch_and_send_data()
