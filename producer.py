@@ -9,18 +9,21 @@ import os
 
 app = Flask(__name__)
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s"
+)
 
 TOPIC = "crimes_mongo"
 
 JSONL_URL = "https://raw.githubusercontent.com/IngEnigma/StreamlitSpark/refs/heads/master/results/crimes_by_area/data.jsonl"
 
 producer_conf = {
-    'bootstrap.servers': os.getenv("KAFKA_BOOTSTRAP", "cvq4abs3mareak309q80.any.us-west-2.mpx.prd.cloud.redpanda.com:9092"),
+    'bootstrap.servers': 'cvq4abs3mareak309q80.any.us-west-2.mpx.prd.cloud.redpanda.com:9092',
     'security.protocol': 'SASL_SSL',
     'sasl.mechanism': 'SCRAM-SHA-256',
-    'sasl.username': os.getenv("KAFKA_USERNAME", "IngEnigma"),
-    'sasl.password': os.getenv("KAFKA_PASSWORD", "BrARBOxX98VI4f2LIuIT1911NYGrXu"),
+    'sasl.username': 'IngEnigma',
+    'sasl.password': 'BrARBOxX98VI4f2LIuIT1911NYGrXu'
 }
 
 producer = Producer(producer_conf)
@@ -56,7 +59,7 @@ def fetch_and_send_data():
     response.raise_for_status()
 
     records = response.text.strip().splitlines()
-    logging.info(f"📥 Registros recibidos: {len(records)}")
+    logging.info(f"Registros recibidos: {len(records)}")
 
     success, failed = 0, 0
 
@@ -81,7 +84,7 @@ def fetch_and_send_data():
     producer.flush()
     return success, failed, len(records)
 
-@app.route('/send-area', methods=['POST'])
+@app.route('/send-areas', methods=['POST'])
 def send_area_stats():
     try:
         success, failed, total = fetch_and_send_data()
